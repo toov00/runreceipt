@@ -91,4 +91,3 @@ Pull requests and issues are welcome.
 ## License
 
 MIT
-# runreceipt
