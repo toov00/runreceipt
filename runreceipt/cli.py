@@ -15,6 +15,7 @@ from runreceipt.receipt import (
     finalize_and_write,
     receipt_id,
 )
+from runreceipt.show import display_receipt_md, resolve_receipt_md
 from runreceipt.sign import load_secret, verify_payload
 
 
@@ -106,6 +107,18 @@ def cmd_diff(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_show(args: argparse.Namespace) -> int:
+    root = Path(args.receipt_root).expanduser().resolve() if args.receipt_root else None
+    try:
+        md = resolve_receipt_md(args.target, root)
+    except FileNotFoundError as e:
+        print(f"runreceipt: receipt.md not found ({e})", file=sys.stderr)
+        return 2
+    use_pager = not args.no_pager
+    display_receipt_md(md, use_pager)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="runreceipt", description="Signed receipts for shell commands")
     sub = p.add_subparsers(dest="command", required=True)
@@ -150,6 +163,22 @@ def build_parser() -> argparse.ArgumentParser:
     pd.add_argument("a", help="receipt directory or path to receipt.json")
     pd.add_argument("b", help="receipt directory or path to receipt.json")
     pd.set_defaults(func=cmd_diff)
+    ps = sub.add_parser("show", help="print receipt.md (paged on a tty)")
+    ps.add_argument(
+        "target",
+        help="receipt id under receipts/, or path to receipt dir, receipt.md, or receipt.json",
+    )
+    ps.add_argument(
+        "--receipt-root",
+        default=None,
+        help="override RUNRECEIPT_DIR for id lookup only",
+    )
+    ps.add_argument(
+        "--no-pager",
+        action="store_true",
+        help="write to stdout only (no less/PAGER)",
+    )
+    ps.set_defaults(func=cmd_show)
     return p
 
 

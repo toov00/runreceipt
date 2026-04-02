@@ -79,17 +79,28 @@ runreceipt diff ./r1/receipt.json ./r2/receipt.json
 
 Lines marked with `*` differ between the two files.
 
+Open a receipt as Markdown (uses `PAGER` / `less` on a tty; pipe or use `--no-pager` for plain stdout):
+
+```bash
+runreceipt show 20260402T120000Z_pytest_a1b2c3d4
+runreceipt show ~/.local/share/runreceipt/receipts/some_id
+runreceipt show /path/to/receipt.md
+runreceipt show --no-pager some_id | head -n 40
+```
+
 ## Reference
 
-Subcommands: `run`, `verify`, `diff`.
+Subcommands: `run`, `verify`, `diff`, `show`.
 
 `diff` takes two paths; each may be a receipt directory (uses `receipt.json` inside) or a direct path to `receipt.json`. Signatures are not checked; load untrusted JSON carefully.
+
+`show` resolves `target` in order: path to `receipt.md`, path to `receipt.json` (sibling `receipt.md`), directory containing `receipt.md`, else `receipt_id` under `$RUNRECEIPT_DIR/receipts/`. Options: `--receipt-root`, `--no-pager`.
 
 `run` options: `--cwd` (working directory for the child), `--artifact PATH` (repeatable, file copied under `artifacts/` in the receipt folder; path can be absolute or relative to cwd), `--receipt-root` (same effect as setting `RUNRECEIPT_DIR` for that invocation only), `--no-forward` (do not stream stdout/stderr to the terminal), `--quiet` (do not print where the receipt was written). Everything after `run` is the argv passed to `subprocess` (leading `--` is stripped if you needed it for your shell).
 
 Environment: `RUNRECEIPT_SECRET` is the signing key as plain text. `RUNRECEIPT_DIR` overrides the storage root (default `~/.local/share/runreceipt`); receipts live in `$RUNRECEIPT_DIR/receipts/<receipt_id>/` with `receipt.json`, `receipt.md`, and optional `artifacts/`.
 
-Exit status from `runreceipt run` matches the child when the child exits with a non-negative code; signals are reported as `128 + signal` like many shells. If the child never starts, `runreceipt` exits `1`. `runreceipt diff` exits `0` when both inputs are read successfully, `2` if a path is missing or JSON is invalid.
+Exit status from `runreceipt run` matches the child when the child exits with a non-negative code; signals are reported as `128 + signal` like many shells. If the child never starts, `runreceipt` exits `1`. `runreceipt diff` exits `0` when both inputs are read successfully, `2` if a path is missing or JSON is invalid. `runreceipt show` exits `0` after printing, `2` if `receipt.md` cannot be resolved.
 
 ## Limitations
 
