@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from runreceipt.capture import forward_streams, run_command
+from runreceipt.diff_receipts import format_receipt_diff, load_receipt, resolve_receipt_json
 from runreceipt.env_diff import diff_env, snapshot_env
 from runreceipt.git_info import git_snapshot
 from runreceipt.paths import receipts_dir
@@ -86,6 +87,25 @@ def cmd_verify(args: argparse.Namespace) -> int:
     return 1
 
 
+def cmd_diff(args: argparse.Namespace) -> int:
+    pa = Path(args.a).expanduser()
+    pb = Path(args.b).expanduser()
+    try:
+        ja = resolve_receipt_json(pa)
+        jb = resolve_receipt_json(pb)
+        data_a = load_receipt(pa)
+        data_b = load_receipt(pb)
+    except FileNotFoundError as e:
+        print(f"runreceipt: not found: {e}", file=sys.stderr)
+        return 2
+    except json.JSONDecodeError as e:
+        print(f"runreceipt: invalid json: {e}", file=sys.stderr)
+        return 2
+    out = format_receipt_diff(data_a, data_b, str(ja), str(jb))
+    print(out)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="runreceipt", description="Signed receipts for shell commands")
     sub = p.add_subparsers(dest="command", required=True)
@@ -126,6 +146,10 @@ def build_parser() -> argparse.ArgumentParser:
     pv = sub.add_parser("verify", help="check receipt.json HMAC signature")
     pv.add_argument("path", help="path to receipt directory or receipt.json")
     pv.set_defaults(func=cmd_verify)
+    pd = sub.add_parser("diff", help="compare two receipt.json files (exit, git, env deltas)")
+    pd.add_argument("a", help="receipt directory or path to receipt.json")
+    pd.add_argument("b", help="receipt directory or path to receipt.json")
+    pd.set_defaults(func=cmd_diff)
     return p
 
 

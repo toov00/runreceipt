@@ -70,15 +70,26 @@ runreceipt verify ~/.local/share/runreceipt/receipts/some_id
 runreceipt verify /path/to/receipt.json
 ```
 
+Compare two receipts (exit, git, and which env keys moved in each run):
+
+```bash
+runreceipt diff ~/.local/share/runreceipt/receipts/old_id ~/.local/share/runreceipt/receipts/new_id
+runreceipt diff ./r1/receipt.json ./r2/receipt.json
+```
+
+Lines marked with `*` differ between the two files.
+
 ## Reference
 
-Subcommands: `run`, `verify`.
+Subcommands: `run`, `verify`, `diff`.
+
+`diff` takes two paths; each may be a receipt directory (uses `receipt.json` inside) or a direct path to `receipt.json`. Signatures are not checked; load untrusted JSON carefully.
 
 `run` options: `--cwd` (working directory for the child), `--artifact PATH` (repeatable, file copied under `artifacts/` in the receipt folder; path can be absolute or relative to cwd), `--receipt-root` (same effect as setting `RUNRECEIPT_DIR` for that invocation only), `--no-forward` (do not stream stdout/stderr to the terminal), `--quiet` (do not print where the receipt was written). Everything after `run` is the argv passed to `subprocess` (leading `--` is stripped if you needed it for your shell).
 
 Environment: `RUNRECEIPT_SECRET` is the signing key as plain text. `RUNRECEIPT_DIR` overrides the storage root (default `~/.local/share/runreceipt`); receipts live in `$RUNRECEIPT_DIR/receipts/<receipt_id>/` with `receipt.json`, `receipt.md`, and optional `artifacts/`.
 
-Exit status from `runreceipt run` matches the child when the child exits with a non-negative code; signals are reported as `128 + signal` like many shells. If the child never starts, `runreceipt` exits `1`.
+Exit status from `runreceipt run` matches the child when the child exits with a non-negative code; signals are reported as `128 + signal` like many shells. If the child never starts, `runreceipt` exits `1`. `runreceipt diff` exits `0` when both inputs are read successfully, `2` if a path is missing or JSON is invalid.
 
 ## Limitations
 
