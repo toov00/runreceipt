@@ -2,13 +2,13 @@
 
 Wraps commands you care about and drops a signed receipt next to your other files: cwd, git HEAD, a diff of process environment variables around the run, captured stdout and stderr, optional file copies, and a clear exit reason. HMAC-SHA256 ties the JSON together so you can spot tampering later.
 
-(( I got tired of wondering "what did I run, from where, on which commit?" after a long day. This is my paper trail without another SaaS account. ))
+(( This is my paper trail without another SaaS account :') ))
 
 ## What It Does
 
 `runreceipt run` executes a command in a directory you choose (or the current one), compares the process environment immediately before and after the child, records git metadata when you are inside a repo, stores full stdout and stderr, and writes `receipt.json` plus a readable `receipt.md` under your receipts folder. You can attach files (build outputs, configs) with `--artifact`. Each payload is signed with a secret from `RUNRECEIPT_SECRET` or a small `secret` file next to your data dir. `runreceipt verify` recomputes the HMAC and tells you if the JSON still matches.
 
-## Environment capture
+## Environment Capture
 
 The receipt records process environment variables only: the same key/value pairs Python exposes as `os.environ` while `runreceipt` is running. It does not dump your whole shell profile, disk `PATH`, installed toolchains, limits, or running services unless those happen to show up as env vars at capture time.
 
@@ -104,11 +104,11 @@ Exit status from `runreceipt run` matches the child when the child exits with a 
 
 ## Limitations
 
-See [Environment capture](#environment-capture) for what env data is and is not included. Git fields are best effort and empty outside a repo. Very large stdout or stderr still land in full JSON, which can get big; the Markdown view truncates long streams with a pointer to the JSON. Signing is HMAC with a shared secret, not a public-key notary.
+See [Environment Capture](#environment-capture) for what env data is and is not included. Git fields are best effort and empty outside a repo. Very large stdout or stderr still land in full JSON, which can get big; the Markdown view truncates long streams with a pointer to the JSON. Signing is HMAC with a shared secret, not a public-key notary.
 
 ## Contributing
 
-Pull requests and issues are welcome.
+Pull requests and issues are very welcome! :-)
 
 ## License
 
